@@ -1,23 +1,11 @@
-"""Необходимо собрать информацию о вакансиях на вводимую должность (используем input или через аргументы
-получаем должность) с сайтов HH(обязательно). Приложение должно анализировать несколько страниц сайта
-(также вводим через input или аргументы). Получившийся список должен содержать в себе минимум:
-Наименование вакансии.
-Предлагаемую зарплату (разносим в три поля: минимальная и максимальная и валюта. цифры преобразуем к цифрам).
-Ссылку на саму вакансию.
-Сайт, откуда собрана вакансия.
-По желанию можно добавить ещё параметры вакансии (например, работодателя и расположение).
-Структура должна быть одинаковая для вакансий с обоих сайтов.
-Общий результат можно вывести с помощью dataFrame через pandas. Сохраните в json либо csv."""
-
 import requests
-import json
+from pymongo import MongoClient
 import pandas as pd
-import csv
 from bs4 import BeautifulSoup as bs
 from pprint import pprint
-headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36'}
+
 main_url = 'https://hh.ru'
-vacancy = input('Введите название вакансии_ ')
+vacancy = input('Input vacancy_ ')
 page = 0
 all_vacancies = []
 params = {'text': vacancy,
@@ -26,7 +14,7 @@ params = {'text': vacancy,
           'order_by': 'relevance',
           'search_period': 0,
           'items_on_page': 20,
-          'page': page}
+          'page': page,}
 headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
                          'AppleWebKit/537.36 (KHTML, like Gecko)'
                          'Chrome/98.0.4758.141 YaBrowser/22.3.4.731 Yowser/2.5 Safari/537.36'}
@@ -54,7 +42,7 @@ for i in range(last_page):
         vacancy_info['link'] = vacancy_link
 
         vacancy_company_name = vacancy.find('a', {'data-qa': "vacancy-serp__vacancy-employer"})
-        vacancy_company = vacancy_company_name.getText()
+        vacancy_company = vacancy_company_name.getText().replace('\xa0', ' ')
         vacancy_info['company'] = vacancy_company
 
         vacancy_info['site'] = main_url + '/'
@@ -90,22 +78,26 @@ for i in range(last_page):
     params['page'] += + 1
     response = requests.get(main_url + '/search/vacancy', params=params, headers=headers)
 
-df = pd.DataFrame(all_vacancies)
-df.to_csv('vacancy_file.csv', index=False, header=False)
+#df = pd.DataFrame(all_vacancies)
+#df.to_csv('vacancy_file.csv', index=False, header=False) # >>> если нужно сохранить в csv формате
 
+client = MongoClient('localhost', 27017)
+vacancy_hh_db = client.vacancy_hh_db
 
+for vacancy in all_vacancies:
+    vacancy_hh_db.vacancy_hh.update_one({'link': vacancy['link']},
+                                        {'$setOnInsert': {'company': vacancy['company'],
+                                                          'currency': vacancy['currency'],
+                                                          'max_salary': vacancy['max_salary'],
+                                                          'min_salary': vacancy['min_salary'],
+                                                          'name': vacancy['name'],
+                                                          'site': vacancy['site']}},
+                                        upsert=True)
+salary = int(input('Input value for salary_ '))
 
+search_salary = vacancy_hh_db.all_vacancies.find({'$or': [{'min_salary': {'$gt': salary}},
+                                                          {'max_salary': {'$gt': salary}},]})
+for item in search_salary:
+    pprint(item)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+# vacancy_hh_db.vacancy_hh.drop()

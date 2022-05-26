@@ -14,34 +14,34 @@ cars = [ {'name': 'Audi', 'price': 52642},
     {'name': 'Volkswagen', 'price': 21600} ]
 
 db = client.testdb  # создать базу данных с именем db
-db.cars.insert_many(cars)  # добавить в базу данных коллекцию cars
-print(db.list_collection_names()) # посмотреть все коллекции в созданной БД >>> cars
+# db.cars.insert_many(cars)  # добавить в базу данных коллекцию cars
+# print(db.list_collection_names()) # посмотреть все коллекции в созданной БД >>> cars
 cars = db.cars.find() # переходим в коллекцию cars
 # print(cars.next()) # выводит следующий элемент в коллекции
 
 # pprint(list(cars)) # создает список из объектов коллекции
 
 n_cars = len(list(db.cars.find()))
-
+# print(f"There are {n_cars} cars")
 
 cars = db.cars.find()
-for car in cars:
-    print('{0} {1}'.format(car['name'],
-        car['price']))
+#for car in cars:
+ #   print('{0} {1}'.format(car['name'],
+  #      car['price']))
 
-expensive_cars = db.cars.find({'price': {'$gt': 50000}})
-for ecar in expensive_cars:
-   print(ecar['name'])
+#expensive_cars = db.cars.find({'price': {'$gt': 50000}})
+#for ecar in expensive_cars:
+ #   print(ecar['name'])
 
 
-cars = db.cars.find({}, {'_id': 1, 'name':1})
-for car in cars:
-   print(car)
+#cars = db.cars.find({}, {'_id': 1, 'name':1})
+#for car in cars:
+ #   print(car)
 
-cars = db.cars.find().sort("price", DESCENDING)
-for car in cars:
-    print('{0} {1}'.format(car['name'],
-        car['price']))
+# cars = db.cars.find().sort("price", DESCENDING)
+# for car in cars:
+   # print('{0} {1}'.format(car['name'],
+    #    car['price']))
 
 agr = [ {'$group': {'_id': 1, 'all': { '$sum': '$price' } } } ]
 val = list(db.cars.aggregate(agr))
