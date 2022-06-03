@@ -26,16 +26,19 @@ driver.find_element(By.CSS_SELECTOR, 'a.llc').click()
 e_mails = []
 
 while True:
-    contact = driver.find_element(By.CLASS_NAME, 'letter-contact').text
-    data = driver.find_element(By.CLASS_NAME, 'letter__date').text
-    topic = driver.find_element(By.CLASS_NAME, 'thread-subject').text
-    message = driver.find_element(By.TAG_NAME, 'tbody').text
-    mail = {'contact': contact,
-            'date': data,
-            'topic': topic,
-            'message': message,}
-    e_mails.append(mail)
-    driver.find_element(By.CLASS_NAME, 'button2__ico')
+    try:
+        contact = driver.find_element(By.CLASS_NAME, 'letter-contact').text
+        data = driver.find_element(By.CLASS_NAME, 'letter__date').text
+        topic = driver.find_element(By.CLASS_NAME, 'thread-subject').text
+        message = driver.find_element(By.TAG_NAME, 'tbody').text
+        mail = {'contact': contact,
+                'date': data,
+                'topic': topic,
+                'message': message,}
+        e_mails.append(mail)
+        driver.find_element(By.CLASS_NAME, 'button2__ico')
+    except:
+        print("Выход")
 driver.close()
 
 client = MongoClient('localhost', 27017)
