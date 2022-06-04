@@ -7,12 +7,14 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common import exceptions
+from selenium.webdriver.common.action_chains import ActionChains
 
 s = Service('./chromedriver')
 options = Options()
 options.add_argument('start-maximized')
 driver = webdriver.Chrome(service=s, options=options)
 driver.implicitly_wait(15)
+actions = ActionChains(driver)
 
 driver.get("https://account.mail.ru/login")
 input_mail = driver.find_element(By.NAME, 'username')
@@ -22,32 +24,39 @@ input_mail = driver.find_element(By.NAME, "password")
 input_mail.send_keys("NextPassword172#")
 input_mail.send_keys(Keys.ENTER)
 driver.find_element(By.CSS_SELECTOR, 'a.llc').click()
+scrol = driver.find_element(By.CLASS_NAME, 'ico ico_16-arrow-down ico_size_s')
+scrol.click()
 
-e_mails = []
-
-while True:
-    try:
-        contact = driver.find_element(By.CLASS_NAME, 'letter-contact').text
-        data = driver.find_element(By.CLASS_NAME, 'letter__date').text
-        topic = driver.find_element(By.CLASS_NAME, 'thread-subject').text
-        message = driver.find_element(By.TAG_NAME, 'tbody').text
-        mail = {'contact': contact,
-                'date': data,
-                'topic': topic,
-                'message': message,}
-        e_mails.append(mail)
-        driver.find_element(By.CLASS_NAME, 'button2__ico')
-    except:
-        print("Выход")
-driver.close()
-
-client = MongoClient('localhost', 27017)
-email_db = client.email_db
-
-for item in e_mails:
-    email_db.mail.update_one({'date': e_mails['date']},
-                                         {'$setOnInsert': {'contact': e_mails['contact'],
-                                                           'topic': e_mails['topic'],
-                                                           'message': e_mails['message']}},
-                                         upsert=True)
-
+# e_mails = []
+#
+# while True:
+#     try:
+#         contact = driver.find_element(By.CLASS_NAME, 'letter-contact').text
+#         data = driver.find_element(By.CLASS_NAME, 'letter__date').text
+#         topic = driver.find_element(By.CLASS_NAME, 'thread-subject').text
+#         message = driver.find_element(By.CLASS_NAME, 'letter-body__body-content').text
+#         mail = {'contact': contact,
+#                 'date': data,
+#                 'topic': topic,
+#                 'message': message,}
+#         e_mails.append(mail)
+#         scrol = driver.find_element(By.CLASS_NAME, 'button2 button2_has-ico button2_has-ico-s button2_arrow-down button2_pure button2_short button2_compact button2_ico-text-top button2_hover-support js-shortcut')
+#         scrol.click()
+#         # for i in range(1):
+#         #     actions.send_keys(Keys.CONTROL)
+#         #     actions.send_keys(Keys.DOWN)
+#             # actions.perform()
+#     except:
+#         break
+# #driver.close()
+#
+# # client = MongoClient('localhost', 27017)
+# # email_db = client.email_db
+# #
+# # for item in e_mails:
+# #     email_db.mail.update_one({'date': e_mails['date']},
+# #                             {'$setOnInsert': {'contact': e_mails['contact'],
+# #                             'topic': e_mails['topic'],
+# #                             'message': e_mails['message']}},
+# #                             upsert=True)
+#
